@@ -16,8 +16,22 @@
  #include <stdio.h>
  #include <stdlib.h>
  #include <time.h>
+ #include <string.h> 
+
+ // Para la animación, necesitamos pausar el programa y limpiar la consola.
+// Esto se hace de forma diferente en Windows vs. Linux/macOS.
+#ifdef _WIN32
+#include <windows.h>
+#define LIMPIAR_PANTALLA "cls"
+#define PAUSA(ms) Sleep(ms)
+#else
+#include <unistd.h>
+#define LIMPIAR_PANTALLA "clear"
+#define PAUSA(ms) usleep(ms * 1000)
+#endif
 
 // === CONSTANTES ===
+
  const char MURO = '#';
  const char CAMINO = '*';
  const char JUGADOR = 'J'; // Lo usaremos más adelante
@@ -35,30 +49,37 @@ void visualizarLaberinto(int alto, int ancho, char** laberinto);
 void generarLaberinto(int alto, int ancho, char** laberinto);
 void cavar(int x, int y, int alto, int ancho, char** laberinto); // Mi funcion recursiva
 void liberarMemoria(int alto, char** laberinto);
-int resolverLaberinto(int alto, int ancho, char** laberinto);
-int buscarSalida(int y, int x, int alto, int ancho, char** laberinto);
+int resolverLaberinto(int alto, int ancho, char** laberinto,int animado);
+int buscarSalida(int y, int x, int alto, int ancho, char** laberinto, int animado);
 
 // === FUNCIÓN PRINCIPAL ===
 
 int main(int argc, char* argv[]) {
     int alto = 21;
     int ancho = 41;
+    int animado = 0; 
     
-    if (argc == 3) {
-        alto = atoi(argv[1]); // atoi convierte un string a un entero
-        ancho = atoi(argv[2]);
-
-        if (alto % 2 == 0) alto++;
-        if (ancho % 2 == 0) ancho++;
-        printf("Generando un laberinto personalizado %dx%d.\n",alto,ancho);
-    } else {
-        printf("Usando un tamaño por defecto: %dx%d. \n",alto,ancho);
-        printf("Consejo: Puedes ejecutar como './laberinto 25 51 para un tamaño personalizado.\n");
+    // Procesamos los argumentos de la línea de comandos
+    if (argc > 1) {
+        if (argc >= 3) {
+            alto = atoi(argv[1]);
+            ancho = atoi(argv[2]);
+            if (alto % 2 == 0) alto++;
+            if (ancho % 2 == 0) ancho++;
+        }
+        // Comprobamos si el último argumento es "--animado"
+        if (strcmp(argv[argc - 1], "--animado") == 0) {
+            animado = 1;
+            printf("¡Modo animación activado!\n");
+        }
+    }
+    
+    if (argc < 3) {
+        printf("Usando un tamaño por defecto: %dx%d. \n", alto, ancho);
+        printf("Consejo: Puedes ejecutar como './laberinto 25 51' o './laberinto 25 51 --animado'.\n");
     }
     printf("\n");
     
-    // Creamos un puntero a punteros de char. 
-    // Esto nos permitirá crear una matriz 2D dinámica.
     char** laberinto = (char**)malloc(alto * sizeof(char*));
     if (laberinto == NULL) { return 1; }
     for (int i = 0; i < alto; i++) {
@@ -95,13 +116,15 @@ int main(int argc, char* argv[]) {
     // ---- Medición de Tiempo de Resolución ----
 
     clock_t inicio_sol = clock();
-    int solucion_encontrada = resolverLaberinto(alto, ancho, laberinto);
+    int solucion_encontrada = resolverLaberinto(alto, ancho, laberinto, animado);
     clock_t fin_sol = clock();
     double tiempo_resolucion = ((double)(fin_sol - inicio_sol)) / CLOCKS_PER_SEC;
     // -------------------------------------------
-    
-   if (solucion_encontrada) {
-        visualizarLaberinto(alto, ancho, laberinto);
+
+    if (animado) { system(LIMPIAR_PANTALLA); } // Limpiamos una última vez para la salida final
+    visualizarLaberinto(alto, ancho, laberinto);
+
+    if (solucion_encontrada) {
         printf("¡Salida encontrada!\n");
     } else {
         printf("El laberinto no tiene solución. (Esto no debería pasar)\n");
@@ -124,9 +147,9 @@ int main(int argc, char* argv[]) {
  * Inicia la busqueda desde la posicion inicial (1,1).
  */
 
- int resolverLaberinto(int alto, int ancho, char** laberinto) {
+ int resolverLaberinto(int alto, int ancho, char** laberinto, int animado) {
     // Empezamos la búsqueda desde la primera celda de camino, junto a la Entrada.
-    return buscarSalida(1, 1, alto, ancho, laberinto);
+    return buscarSalida(1, 1, alto, ancho, laberinto, animado);
  }
 
  /**
@@ -144,11 +167,9 @@ int main(int argc, char* argv[]) {
   * @return int 1 si se encontró la salida, 0 en caso contrario.
   */
 
-  int buscarSalida(int y, int x, int alto, int ancho, char** laberinto) {
+  int buscarSalida(int y, int x, int alto, int ancho, char** laberinto, int animado) {
     // --- Casos Base (Condiciones para detener la recursión) ---
-    
-    // ¡CORRECIÓN ! Esta es la valla de seguridad.
-
+   
     // 0.1 ¿Estamos fuera de los limites del laberinto?
     if (y < 0 || y >= alto || x < 0 || x >= ancho) {
         return 0; // Si estamos fuera, este no es un camino válido.
@@ -169,17 +190,26 @@ int main(int argc, char* argv[]) {
     // Marcamos la celda actual como parte de nuestro camino tentativo.
     laberinto[y][x] = RECORRIDO;
 
+    if (animado) {
+        visualizarLaberinto(alto, ancho, laberinto);
+        PAUSA(15); // Pausa de 15 milisegundos para que sea visible
+    }
+
     // Intentamos movernos en las 4 direcciones.
     // Si alguna de estas llamadas encuentra la salida, el 'return 1' se propagará hacia atrás.
-    if (buscarSalida(y, x+1, alto, ancho, laberinto)) return 1; // Este
-    if (buscarSalida(y+1, x, alto, ancho, laberinto)) return 1; // Sur
-    if (buscarSalida(y, x-1, alto, ancho, laberinto)) return 1; // Oeste
-    if (buscarSalida(y-1, x, alto, ancho, laberinto)) return 1; // Norte
+    if (buscarSalida(y, x+1, alto, ancho, laberinto, animado)) return 1; // Este
+    if (buscarSalida(y+1, x, alto, ancho, laberinto, animado)) return 1; // Sur
+    if (buscarSalida(y, x-1, alto, ancho, laberinto, animado)) return 1; // Oeste
+    if (buscarSalida(y-1, x, alto, ancho, laberinto, animado)) return 1; // Norte
 
     // Si llegamos aquí, significa que ninguna direccion funcionó. Es un callejo sin salida.
     // "Recogemos nuestra migaa de pan" y volvemos atrás.
-    laberinto[y][x] = CAMINO;
+    laberinto[y][x] = CAMINO; // Backtracking: recogemos la "miga de pan"
 
+    if (animado) {
+        visualizarLaberinto(alto, ancho, laberinto);
+        PAUSA(15);
+    }
     return 0; // Informaremos al paso anterior que este camino no lleva ninguna parte.
   }
 
