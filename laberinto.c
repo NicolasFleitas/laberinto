@@ -1,15 +1,17 @@
 /**
-* @file laberinto.c
-* @brief Día 3: Generador de Laberintos - Fundamentos y Estructura.
- En este tercer día, enseñamos a nuestro programa a resolver el laberinto que ha creado.
- * 1. Implementamos un algoritmo de resolución usando "Vuelta Atrás" (Backtracking).
- * 2. La función recursiva `buscarSalida` explora los caminos posibles.
- * 3. Si se encuentra la salida, el camino correcto se marca con el carácter RECORRIDO.
- * 4. Mostramos el laberinto generado y su posterior solución.
-
-* Autor: Nicolás Fleitas
-* Fecha: 02 de Septiembre de 2025
-*/
+ * @file laberinto.c
+ * @brief Programa para generar y resolver laberintos aleatorios.
+ *
+ * Implementa un generador de laberintos usando el algoritmo de Vuelta Atrás Recursiva
+ * para garantizar que siempre sean resolubles. Posteriormente, utiliza el mismo
+ * algoritmo de backtracking para encontrar y mostrar el camino desde la entrada
+ * hasta la salida. El tamaño del laberinto es configurable por el usuario.
+ * El programa también mide y reporta los tiempos de ejecución para la generación
+ * y la resolución.
+ *
+ * @author Nico Fleitas
+ * @date 08 de Septiembre de 2025
+ */
 
  #include <stdio.h>
  #include <stdlib.h>
@@ -45,12 +47,9 @@ int main(int argc, char* argv[]) {
     if (argc == 3) {
         alto = atoi(argv[1]); // atoi convierte un string a un entero
         ancho = atoi(argv[2]);
-        // Truco pro: el algoritmo funciona mucho mejor con dimensiones impares
-        // si el usuario nos da un numero par, lo convertimos al siguiente impar
-        // para asegurar que haya paredes en los caminos.
+
         if (alto % 2 == 0) alto++;
         if (ancho % 2 == 0) ancho++;
-
         printf("Generando un laberinto personalizado %dx%d.\n",alto,ancho);
     } else {
         printf("Usando un tamaño por defecto: %dx%d. \n",alto,ancho);
@@ -69,33 +68,54 @@ int main(int argc, char* argv[]) {
 
     srand(time(NULL));
 
+    // --- Medición de Tiempo de Generación ---
+    clock_t inicio_gen = clock();
+
     // 1. Llenamos el laberinto de muros.
     inicializarLaberinto(alto, ancho, laberinto);
     // 2. Damos el primero paso para "cavar" el laberinto.
     generarLaberinto(alto, ancho, laberinto);
     // Conectamos la salida
     if (laberinto[alto - 2][ancho - 2]== MURO) {
-        laberinto[alto -2][ancho -2 ] == CAMINO;
+        laberinto[alto - 2][ancho - 2 ] = CAMINO;
     }
     // Marcamos la entrada y la salida
     laberinto[1][0] = ENTRADA;
     laberinto[alto - 2][ancho - 1] = SALIDA;
-    // 3. Mostramos el resultado en la consola
-    printf("--- Laberinto Generado ---\n");
 
+    clock_t fin_gen = clock();
+    double tiempo_generacion = ((double)(fin_gen - inicio_gen)) / CLOCKS_PER_SEC;
+    // -------------------------------------------
+
+    printf("--- Laberinto Generado ---\n");
     visualizarLaberinto(alto, ancho, laberinto);
 
-    //  --- Aca resolvemos los laberintos---
     printf("\n--- Resolviendo el Laberinto... ---\n");
-    if (resolverLaberinto(alto, ancho, laberinto)) {
-        visualizarLaberinto(alto, ancho, laberinto);
-        printf("Salida encontrada!\n");
-    } else {
-        printf("El laberinto no tiene solución. (Esto no deberia pasar)\n");
-    }
-    // 4. Liberamos la memoria que reservamos. ¡Muy importante para no tener fugas de memoria!
-    liberarMemoria(alto, laberinto);
 
+    // ---- Medición de Tiempo de Resolución ----
+
+    clock_t inicio_sol = clock();
+    int solucion_encontrada = resolverLaberinto(alto, ancho, laberinto);
+    clock_t fin_sol = clock();
+    double tiempo_resolucion = ((double)(fin_sol - inicio_sol)) / CLOCKS_PER_SEC;
+    // -------------------------------------------
+    
+   if (solucion_encontrada) {
+        visualizarLaberinto(alto, ancho, laberinto);
+        printf("¡Salida encontrada!\n");
+    } else {
+        printf("El laberinto no tiene solución. (Esto no debería pasar)\n");
+    }
+
+      // --- Reporte de Tiempos ---
+    printf("\n--- ANÁLISIS DE RENDIMIENTO ---\n");
+    printf("Tiempo de generación: %f segundos.\n", tiempo_generacion);
+    printf("Tiempo de resolución: %f segundos.\n", tiempo_resolucion);
+
+
+    
+    // Importante, evita fugas de memoria.
+    liberarMemoria(alto, laberinto);
     return 0; // All is well 
 }
 
