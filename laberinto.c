@@ -18,8 +18,8 @@
  #include <time.h>
 
 // === CONSTANTES ===
- const char MURO = ' # ';
- const char CAMINO = ' * ';
+ const char MURO = '#';
+ const char CAMINO = '*';
  const char JUGADOR = 'J'; // Lo usaremos más adelante
  const char ENTRADA = 'E';
  const char SALIDA = 'S';
@@ -35,8 +35,8 @@ void visualizarLaberinto(int alto, int ancho, char** laberinto);
 void generarLaberinto(int alto, int ancho, char** laberinto);
 void cavar(int x, int y, int alto, int ancho, char** laberinto); // Mi funcion recursiva
 void liberarMemoria(int alto, char** laberinto);
-void resolverLaberinto(int alto, int ancho, char** laberinto);
-void buscarSalida(int y, int x, int alto, int ancho, char** laberinto);
+int resolverLaberinto(int alto, int ancho, char** laberinto);
+int buscarSalida(int y, int x, int alto, int ancho, char** laberinto);
 
 // === FUNCIÓN PRINCIPAL ===
 
@@ -87,19 +87,84 @@ int main(int argc, char* argv[]) {
 
     visualizarLaberinto(alto, ancho, laberinto);
 
-    // --- Preparación para el Día 3 (actualmente comentado) ---
-    // printf("\n--- Resolviendo el Laberinto... ---\n");
-    // if (resolverLaberinto(alto, ancho, laberinto)) {
-    //     visualizarLaberinto(alto, ancho, laberinto);
-    // } else {
-    //     printf("El laberinto no tiene solución.\n");
-    // }
-
+    //  --- Aca resolvemos los laberintos---
+    printf("\n--- Resolviendo el Laberinto... ---\n");
+    if (resolverLaberinto(alto, ancho, laberinto)) {
+        visualizarLaberinto(alto, ancho, laberinto);
+        printf("Salida encontrada!\n");
+    } else {
+        printf("El laberinto no tiene solución. (Esto no deberia pasar)\n");
+    }
     // 4. Liberamos la memoria que reservamos. ¡Muy importante para no tener fugas de memoria!
     liberarMemoria(alto, laberinto);
 
     return 0; // All is well 
 }
+
+/**
+ * @brief Funcion de entrada para el algoritmo de resolución
+ * Inicia la busquedaw desde la posicion inicial (1,1).
+ */
+
+ int resolverLaberinto(int alto, int ancho, char** laberinto) {
+    // Empezamos la búsqueda desde la primera celda de camino, junto a la Entrada.
+    return buscarSalida(1, 1, alto, ancho, laberinto);
+ }
+
+ /**
+  * @brief Busca la salida usando Backtracking recursivo.
+  * 
+  * Esta es la funcion clave de resolución. Funciona así:
+  * 1. (Caso Base) Sí estamos fuera de los límites, en un muuero o en un sitio ya visitado, volvemos (false).
+  * 2. (Caso Base) SI encontramos la SALIDA, hemos terminado (true).
+  * 3. Marcamos la celda actual como parte del RECORRIDO (dejamos una "miga de pan").
+  * 4. Intentamos movermos recursivamente en las 4 direcciones (Norte, Sur, Este, Oeste).
+  * 5. Si algunas de esas llamadas recursivas devuelve 'true', significa que encontró la salida. Devolvemos 'true'.
+  * 6. Si ninguna direcciones lleva a la salida, este es un callejón sin salida.
+  * Recogemos nuestra "miga de pan" (restauramos la celda a CAMINO) y devolvemos 'false'.
+  * 
+  * @return int 1 si se encontró la salida, 0 en caso contrario.
+  */
+
+  int buscarSalida(int y, int x, int alto, int ancho, char** laberinto) {
+    // --- Casos Base (Condiciones para detener la recursión) ---
+    
+    // ¡CORRECIÓN ! Esta es la valla de seguridad.
+
+    // 0.1 ¿Estamos fuera de los limites del laberinto?
+    if (y < 0 || y >= alto || x < 0 || x >= ancho) {
+        return 0; // Si estamos fuera, este no es un camino válido.
+    }
+
+    // 1. ¿Hemos encontrado la SALIDA? (Ahora es seguro comprobarlo)
+    if (laberinto[y][x] == SALIDA) {
+        return 1; // ¡Éxito!
+    }
+
+    // 2. ¿Estamos en un MURO o en un camino que ya forma parte de la solución?
+    if (laberinto[y][x] == MURO || laberinto[y][x] == RECORRIDO) {
+        return 0; // No podemos pasar por aqui.
+    }
+
+    // --- Paso recursivo ---
+
+    // Marcamos la celda actual como parte de nuestro camino tentativo.
+    laberinto[y][x] = RECORRIDO;
+
+    // Intentamos movernos en las 4 direcciones.
+    // Si alguna de estas llamadas encuentra la salida, el 'return 1' se propagará hacia atrás.
+    if (buscarSalida(y, x+1, alto, ancho, laberinto)) return 1; // Este
+    if (buscarSalida(y+1, x, alto, ancho, laberinto)) return 1; // Sur
+    if (buscarSalida(y, x-1, alto, ancho, laberinto)) return 1; // Oeste
+    if (buscarSalida(y-1, x, alto, ancho, laberinto)) return 1; // Norte
+
+    // Si llegamos aquí, significa que ninguna direccion funcionó. Es un callejo sin salida.
+    // "Recogemos nuestra migaa de pan" y volvemos atrás.
+    laberinto[y][x] = CAMINO;
+
+    return 0; // Informaremos al paso anterior que este camino no lleva ninguna parte.
+  }
+
 
 /**
  * @brief Llena la matriz del laberinto con el carácter del MURO.
