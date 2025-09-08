@@ -1,13 +1,11 @@
 /**
 * @file laberinto.c
-* @brief Día 2: Generador de Laberintos - Fundamentos y Estructura.
-* Pasos anteriores: DIA 1
-* En este primer día, sentamos las bases de nuestro programa:
-* 1. Definimos la estructura de datos para el laberinto (una matriz 2D).
-* 2. Creamos una función para inicializar el laberinto, llenándolo completamente de muros.
-* 3. Implementamos una función para visualizar el estado actual del laberinto en la consola.
-* 4. Damos el primer paso en la generación, creando un punto de partida.
-* * Pasos anteriores: DIA 2
+* @brief Día 3: Generador de Laberintos - Fundamentos y Estructura.
+ En este tercer día, enseñamos a nuestro programa a resolver el laberinto que ha creado.
+ * 1. Implementamos un algoritmo de resolución usando "Vuelta Atrás" (Backtracking).
+ * 2. La función recursiva `buscarSalida` explora los caminos posibles.
+ * 3. Si se encuentra la salida, el camino correcto se marca con el carácter RECORRIDO.
+ * 4. Mostramos el laberinto generado y su posterior solución.
 
 * Autor: Nicolás Fleitas
 * Fecha: 02 de Septiembre de 2025
@@ -103,7 +101,7 @@ int main(int argc, char* argv[]) {
 
 /**
  * @brief Funcion de entrada para el algoritmo de resolución
- * Inicia la busquedaw desde la posicion inicial (1,1).
+ * Inicia la busqueda desde la posicion inicial (1,1).
  */
 
  int resolverLaberinto(int alto, int ancho, char** laberinto) {
