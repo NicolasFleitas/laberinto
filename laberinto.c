@@ -10,7 +10,7 @@
  * Versión Final: Incluye medición de rendimiento y una visualización animada opcional
  * de la resolución del laberinto.
  *
- * @author Tu Programador Senior Guía
+ * @author Nicolas Fleitas
  * @date 09 de Septiembre de 2025
  */
 
@@ -22,14 +22,16 @@
 // Para la animación, necesitamos pausar el programa y limpiar la consola.
 // Esto se hace de forma diferente en Windows vs. Linux/macOS.
 #ifdef _WIN32
+// --- Código para Windows ---
 #include <windows.h>
 #define LIMPIAR_PANTALLA "cls"
 #define PAUSA(ms) Sleep(ms)
 #define SYSTEM_PAUSE system("pause")
 #else
+// --- Código para Linux y macOS ---
 #include <unistd.h>
 #define LIMPIAR_PANTALLA "clear"
-#define PAUSA(ms) usleep(ms * 1000)
+#define PAUSA(ms) usleep(ms * 1000) // usleep usa microsegundos
 #define SYSTEM_PAUSE printf("Presiona Enter para continuar..."); getchar()
 #endif
 
@@ -55,6 +57,17 @@ int main(int argc, char* argv[]) {
     int alto = 21;
     int ancho = 41;
     int animado = 0; // Por defecto, la animación está desactivada.
+
+    // --- Variables para la medición de tiempo ---
+    #ifdef _WIN32
+        LARGE_INTEGER frecuencia;
+        LARGE_INTEGER inicio_gen, fin_gen, inicio_sol, fin_sol;
+        QueryPerformanceFrequency(&frecuencia); // Obtenemos los ticks por segundo del PC
+    #else
+        struct timespec inicio_gen, fin_gen, inicio_sol, fin_sol;
+    #endif
+    double tiempo_generacion, tiempo_resolucion;
+    // ------------------------------------------
 
     // Procesamos los argumentos de la línea de comandos
     if (argc >= 3) {
@@ -85,7 +98,13 @@ int main(int argc, char* argv[]) {
 
     srand(time(NULL));
 
-    clock_t inicio_gen = clock();    
+       // --- Medición de la Generación ---
+    #ifdef _WIN32
+        QueryPerformanceCounter(&inicio_gen);
+    #else
+        clock_gettime(CLOCK_MONOTONIC, &inicio_gen);
+    #endif
+
     inicializarLaberinto(alto, ancho, laberinto);
     generarLaberinto(alto, ancho, laberinto);
     if (laberinto[alto - 2][ancho - 2] == MURO) {
@@ -93,31 +112,46 @@ int main(int argc, char* argv[]) {
     }
     laberinto[1][0] = ENTRADA;
     laberinto[alto - 2][ancho - 1] = SALIDA;
-    clock_t fin_gen = clock();
-    double tiempo_generacion = ((double)(fin_gen - inicio_gen)) / CLOCKS_PER_SEC;
+
+    #ifdef _WIN32
+        QueryPerformanceCounter(&fin_gen);
+        tiempo_generacion = (double)(fin_gen.QuadPart - inicio_gen.QuadPart) / frecuencia.QuadPart;
+    #else
+        clock_gettime(CLOCK_MONOTONIC, &fin_gen);
+        tiempo_generacion = (fin_gen.tv_sec - inicio_gen.tv_sec) + (fin_gen.tv_nsec - inicio_gen.tv_nsec) / 1e9;
+    #endif
+    // --------------------------------
 
     printf("--- Laberinto Generado ---\n");
     visualizarLaberinto(alto, ancho, laberinto);
-
-    // Añadimos una pausa para que el usuario pueda ver el laberinto generado.
     printf("\nEl laberinto ha sido generado.\n");
     SYSTEM_PAUSE;
 
-    printf("\n--- Resolviendo el Laberinto... ---\n");
-    
-    clock_t inicio_sol = clock();
-    int solucion_encontrada = resolverLaberinto(alto, ancho, laberinto, animado);
-    clock_t fin_sol = clock();
-    double tiempo_resolucion = ((double)(fin_sol - inicio_sol)) / CLOCKS_PER_SEC;
+    // --- Medición de la Resolución ---
+    #ifdef _WIN32
+        QueryPerformanceCounter(&inicio_sol);
+    #else
+        clock_gettime(CLOCK_MONOTONIC, &inicio_sol);
+    #endif
 
-    // Limpiamos la pantalla justo ANTES de mostrar el resultado final para una vista limpia.
+    int solucion_encontrada = resolverLaberinto(alto, ancho, laberinto, animado);
+
+    #ifdef _WIN32
+        QueryPerformanceCounter(&fin_sol);
+        tiempo_resolucion = (double)(fin_sol.QuadPart - inicio_sol.QuadPart) / frecuencia.QuadPart;
+    #else
+        clock_gettime(CLOCK_MONOTONIC, &fin_sol);
+        tiempo_resolucion = (fin_sol.tv_sec - inicio_sol.tv_sec) + (fin_sol.tv_nsec - inicio_sol.tv_nsec) / 1e9;
+    #endif
+    // --------------------------------
+
     system(LIMPIAR_PANTALLA);
     visualizarLaberinto(alto, ancho, laberinto);
 
     if (solucion_encontrada) {
         printf("¡Salida encontrada!\n");
     } else {
-        printf("El laberinto no tiene solución. (Esto no debería pasar)\n");
+        printf("El laberinto no tiene solución.\n");
     }
 
     printf("\n--- ANÁLISIS DE RENDIMIENTO ---\n");
@@ -127,8 +161,11 @@ int main(int argc, char* argv[]) {
     } else {
         printf("Tiempo de resolución (algoritmo): %f segundos.\n", tiempo_resolucion);
     }
+    fflush(stdout);
 
     liberarMemoria(alto, laberinto);
+    printf("Fin\n");
+    SYSTEM_PAUSE;
     return 0;
 }
 
@@ -187,32 +224,6 @@ void generarLaberinto(int alto, int ancho, char** laberinto) {
     cavar(1, 1, alto, ancho, laberinto);
 }
 
-// void cavar(int y, int x, int alto, int ancho, char** laberinto) {
-    
-//     laberinto[y][x] = CAMINO;
-//     int direcciones[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
-//     for (int i = 0; i < 4; i++) {
-//         int r = rand() % 4;
-//         int tempY = direcciones[i][0];
-//         int tempX = direcciones[i][1];
-//         direcciones[i][0] = direcciones[r][0];
-//         direcciones[i][1] = direcciones[r][1];
-//         direcciones[r][0] = tempY;
-//         direcciones[r][1] = tempX;
-//     }
-//     for (int i = 0; i < 4; i++) {
-//         int dx = direcciones[i][1];
-//         int dy = direcciones[i][0];
-//         int nuevaX = x + dx * 2;
-//         int nuevaY = y + dy * 2;
-//         if (nuevaY > 0 && nuevaY < alto - 1 && nuevaX > 0 && nuevaX < ancho - 1 && laberinto[nuevaY][nuevaX] == MURO) {
-//             laberinto[y + dy][x + dx] = CAMINO;
-//             cavar(nuevaY, nuevaX, alto, ancho, laberinto);            
-//         }
-//     }
-// }
-
-
 void cavar(int y, int x, int alto, int ancho, char** laberinto) {
     // 1. Marcar la celda actual como un camino para no volver a visitarla.
     laberinto[y][x] = CAMINO;
@@ -268,6 +279,32 @@ void liberarMemoria(int alto, char** laberinto) {
     }
     free(laberinto);
 }
+
+// void cavar(int y, int x, int alto, int ancho, char** laberinto) {
+    
+//     laberinto[y][x] = CAMINO;
+//     int direcciones[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+//     for (int i = 0; i < 4; i++) {
+//         int r = rand() % 4;
+//         int tempY = direcciones[i][0];
+//         int tempX = direcciones[i][1];
+//         direcciones[i][0] = direcciones[r][0];
+//         direcciones[i][1] = direcciones[r][1];
+//         direcciones[r][0] = tempY;
+//         direcciones[r][1] = tempX;
+//     }
+//     for (int i = 0; i < 4; i++) {
+//         int dx = direcciones[i][1];
+//         int dy = direcciones[i][0];
+//         int nuevaX = x + dx * 2;
+//         int nuevaY = y + dy * 2;
+//         if (nuevaY > 0 && nuevaY < alto - 1 && nuevaX > 0 && nuevaX < ancho - 1 && laberinto[nuevaY][nuevaX] == MURO) {
+//             laberinto[y + dy][x + dx] = CAMINO;
+//             cavar(nuevaY, nuevaX, alto, ancho, laberinto);            
+//         }
+//     }
+// }
+
 
 
 
