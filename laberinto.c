@@ -14,10 +14,12 @@
  * @date 10 de Septiembre de 2025
  */
 
+ // Definir esta macro antes de incluir las cabeceras asegura que nanosleep esté disponible.
+ #define _POSIX_C_SOURCE 199309L
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <linux/time.h>
 #include <string.h> // Necesario para comparar strings (strcmp)
 
 // Para la animación, necesitamos pausar el programa y limpiar la consola.
@@ -32,7 +34,13 @@
 // --- Código para Linux y macOS ---
 #include <unistd.h>
 #define LIMPIAR_PANTALLA "clear"
-#define PAUSA(ms) usleep(ms * 1000) // usleep usa microsegundos
+// Implementación de PAUSA usando nanosleep para alta precisión.
+#define PAUSA(ms) do { \
+    struct timespec ts; \
+    ts.tv_sec = (ms) / 1000; \
+    ts.tv_nsec = ((ms) % 1000) * 1000000L; \
+    nanosleep(&ts, NULL); \
+} while (0)
 #define SYSTEM_PAUSE printf("Presiona Enter para continuar..."); getchar()
 #endif
 
@@ -281,6 +289,7 @@ void liberarMemoria(int alto, char** laberinto) {
     }
     free(laberinto);
 }
+
 
 // void cavar(int y, int x, int alto, int ancho, char** laberinto) {
     
