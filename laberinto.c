@@ -11,12 +11,13 @@
  * de la resolución del laberinto.
  *
  * @author Nicolas Fleitas
- * @date 09 de Septiembre de 2025
+ * @date 10 de Septiembre de 2025
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <linux/time.h>
 #include <string.h> // Necesario para comparar strings (strcmp)
 
 // Para la animación, necesitamos pausar el programa y limpiar la consola.
@@ -34,6 +35,7 @@
 #define PAUSA(ms) usleep(ms * 1000) // usleep usa microsegundos
 #define SYSTEM_PAUSE printf("Presiona Enter para continuar..."); getchar()
 #endif
+
 
 
 // === CONSTANTES ===
