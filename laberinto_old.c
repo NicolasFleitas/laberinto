@@ -44,8 +44,6 @@
 #define SYSTEM_PAUSE printf("Presiona Enter para continuar..."); getchar()
 #endif
 
-
-
 // === CONSTANTES ===
 const char MURO = '#';
 const char CAMINO = '*';
@@ -205,6 +203,7 @@ int buscarSalida(int y, int x, int alto, int ancho, char** laberinto, int animad
         visualizarLaberinto(alto, ancho, laberinto);
         PAUSA(15); // Pausa de 15 milisegundos para que sea visible
     }
+    
 
     if (buscarSalida(y, x + 1, alto, ancho, laberinto, animado)) return 1;
     if (buscarSalida(y + 1, x, alto, ancho, laberinto, animado)) return 1;
@@ -291,30 +290,6 @@ void liberarMemoria(int alto, char** laberinto) {
 }
 
 
-// void cavar(int y, int x, int alto, int ancho, char** laberinto) {
-    
-//     laberinto[y][x] = CAMINO;
-//     int direcciones[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
-//     for (int i = 0; i < 4; i++) {
-//         int r = rand() % 4;
-//         int tempY = direcciones[i][0];
-//         int tempX = direcciones[i][1];
-//         direcciones[i][0] = direcciones[r][0];
-//         direcciones[i][1] = direcciones[r][1];
-//         direcciones[r][0] = tempY;
-//         direcciones[r][1] = tempX;
-//     }
-//     for (int i = 0; i < 4; i++) {
-//         int dx = direcciones[i][1];
-//         int dy = direcciones[i][0];
-//         int nuevaX = x + dx * 2;
-//         int nuevaY = y + dy * 2;
-//         if (nuevaY > 0 && nuevaY < alto - 1 && nuevaX > 0 && nuevaX < ancho - 1 && laberinto[nuevaY][nuevaX] == MURO) {
-//             laberinto[y + dy][x + dx] = CAMINO;
-//             cavar(nuevaY, nuevaX, alto, ancho, laberinto);            
-//         }
-//     }
-// }
 
 
 

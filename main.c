@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
     #endif
 
     inicializarLaberinto(alto, ancho, laberinto);
-    generarLaberinto(alto, ancho, laberinto); // Función del módulo 'generador'
+    generarLaberinto(alto, ancho, laberinto); 
     if (laberinto[alto - 2][ancho - 2] == MURO) {
         laberinto[alto - 2][ancho - 2] = CAMINO;
     }
