@@ -1,10 +1,6 @@
-// generador.c
-
-#include <stdlib.h> // para rand()
+#include <stdlib.h>
 #include "generador.h"
 
-// La función 'cavar' solo es usada por 'generarLaberinto',
-// así que la hacemos 'static' para que no sea visible fuera de este archivo.
 static void cavar(int y, int x, int alto, int ancho, char** laberinto) {
     laberinto[y][x] = CAMINO;
     int direcciones[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};

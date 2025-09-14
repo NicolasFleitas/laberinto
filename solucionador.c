@@ -1,9 +1,6 @@
-// solucionador.c
-
 #include "solucionador.h"
-#include "utils.h" // Usaremos nuestras nuevas utilidades
+#include "utils.h" 
 
-// 'buscarSalida' es la función recursiva auxiliar, la hacemos 'static'.
 static int buscarSalida(int y, int x, int alto, int ancho, char** laberinto, int animado) {
     if (y < 0 || y >= alto || x < 0 || x >= ancho) {
         return 0;
@@ -34,8 +31,7 @@ static int buscarSalida(int y, int x, int alto, int ancho, char** laberinto, int
         limpiar_pantalla();
         visualizarLaberinto(alto, ancho, laberinto);
         pausa(15);
-    }
-    
+    }    
     return 0;
 }
 

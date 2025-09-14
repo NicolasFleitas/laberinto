@@ -1,18 +1,14 @@
-#define _POSIX_C_SOURCE 199309L // Necesario para la medición de tiempo en Linux
-
+#define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-
-// Incluimos todas nuestras nuevas cabeceras
+// Se incluyen todas las cabeceras
 #include "laberinto.h"
 #include "generador.h"
 #include "solucionador.h"
 #include "utils.h"
-
-// La medición de tiempo depende del sistema operativo,
-// por lo que debe ir aquí o en utils.
+// La medición de tiempo depende del sistema operativo.
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -43,12 +39,12 @@ int main(int argc, char* argv[]) {
         printf("Generando un laberinto personalizado %dx%d.\n", alto, ancho);
     } else {
         printf("Usando un tamaño por defecto: %dx%d. \n", alto, ancho);
-        printf("Consejo: Puedes ejecutar como './laberinto 25 51' o './laberinto 25 51 --animado'.\n");
+        printf("Para generar un laberinto personalizado. Puedes ejecutar: './laberinto 25 51' o './laberinto 25 51 --animado'.\n");
     }
 
     if (argc > 1 && strcmp(argv[argc - 1], "--animado") == 0) {
         animado = 1;
-        printf("¡Modo animación activado!\n");
+        printf("---Modo Animación---\n");
     }
     printf("\n");
 
@@ -71,7 +67,7 @@ int main(int argc, char* argv[]) {
     inicializarLaberinto(alto, ancho, laberinto);
     generarLaberinto(alto, ancho, laberinto); // Función del módulo 'generador'
     if (laberinto[alto - 2][ancho - 2] == MURO) {
-        laberinto[alto - 2][ancho - 2] = CAMINO;
+         laberinto[alto - 2][ancho - 2] = CAMINO;
     }
     laberinto[1][0] = ENTRADA;
     laberinto[alto - 2][ancho - 1] = SALIDA;
@@ -122,10 +118,8 @@ int main(int argc, char* argv[]) {
     } else {
         printf("Tiempo de resolución (algoritmo): %f segundos.\n", tiempo_resolucion);
     }
-    fflush(stdout);
+    
+    liberarMemoria(alto, laberinto); 
 
-    liberarMemoria(alto, laberinto);
-    printf("Fin del programa\n");
-    system_pause();
     return 0;
 }

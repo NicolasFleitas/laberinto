@@ -1,16 +1,14 @@
-// utils.c
-
 #include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 #ifdef _WIN32
-// --- Código para Windows ---
+// -- WINDOWS --
 void limpiar_pantalla() { system("cls"); }
 void pausa(int ms) { Sleep(ms); }
 void system_pause() { system("pause"); }
 #else
-// --- Código para Linux y macOS ---
+// -- LINUX Y macOS --
 #include <unistd.h>
 void limpiar_pantalla() { system("clear"); }
 void pausa(int ms) {

@@ -1,29 +1,11 @@
-/**
- * @file laberinto.c
- * @brief Programa para generar y resolver laberintos aleatorios.
- *
- * Implementa un generador de laberintos usando el algoritmo de Vuelta Atrás Recursiva
- * para garantizar que siempre sean resolubles. Posteriormente, utiliza el mismo
- * algoritmo de backtracking para encontrar y mostrar el camino desde la entrada
- * hasta la salida. El tamaño del laberinto es configurable por el usuario.
- *
- * Versión Final: Incluye medición de rendimiento y una visualización animada opcional
- * de la resolución del laberinto.
- *
- * @author Nicolas Fleitas
- * @date 10 de Septiembre de 2025
- */
-
- // Definir esta macro antes de incluir las cabeceras asegura que nanosleep esté disponible.
- #define _POSIX_C_SOURCE 199309L
+// Definir esta macro antes de incluir las cabeceras asegura que nanosleep esté disponible.
+#define _POSIX_C_SOURCE 199309L
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h> // Necesario para comparar strings (strcmp)
 
-// Para la animación, necesitamos pausar el programa y limpiar la consola.
-// Esto se hace de forma diferente en Windows vs. Linux/macOS.
 #ifdef _WIN32
 // --- Código para Windows ---
 #include <windows.h>
@@ -43,8 +25,6 @@
 } while (0)
 #define SYSTEM_PAUSE printf("Presiona Enter para continuar..."); getchar()
 #endif
-
-
 
 // === CONSTANTES ===
 const char MURO = '#';
@@ -99,9 +79,9 @@ int main(int argc, char* argv[]) {
     
     printf("\n");
     
-    char** laberinto = (char**)malloc(alto * sizeof(char*)); // crear la columna vertebral
+    char** laberinto = (char**)malloc(alto * sizeof(char*)); 
     if (laberinto == NULL) { return 1; }
-    for (int i = 0; i < alto; i++) { // crear las costillas
+    for (int i = 0; i < alto; i++) { 
         laberinto[i] = (char*)malloc(ancho * sizeof(char));
         if (laberinto[i] == NULL) { return 1; }
     }
@@ -188,6 +168,7 @@ int resolverLaberinto(int alto, int ancho, char** laberinto, int animado) {
 }
 
 int buscarSalida(int y, int x, int alto, int ancho, char** laberinto, int animado) {
+  
     if (y < 0 || y >= alto || x < 0 || x >= ancho) {
         return 0;
     }
@@ -201,9 +182,9 @@ int buscarSalida(int y, int x, int alto, int ancho, char** laberinto, int animad
     laberinto[y][x] = RECORRIDO;
 
     if (animado) {
-        system(LIMPIAR_PANTALLA); // Limpiamos la pantalla ANTES de dibujar el nuevo frame
+        system(LIMPIAR_PANTALLA); // Se limpia la pantalla antes de volver a mostrar el laberinto
         visualizarLaberinto(alto, ancho, laberinto);
-        PAUSA(15); // Pausa de 15 milisegundos para que sea visible
+        PAUSA(15);
     }
 
     if (buscarSalida(y, x + 1, alto, ancho, laberinto, animado)) return 1;
@@ -211,14 +192,13 @@ int buscarSalida(int y, int x, int alto, int ancho, char** laberinto, int animad
     if (buscarSalida(y, x - 1, alto, ancho, laberinto, animado)) return 1;
     if (buscarSalida(y - 1, x, alto, ancho, laberinto, animado)) return 1;
 
-    laberinto[y][x] = CAMINO; // Backtracking: recogemos la "miga de pan"
+    laberinto[y][x] = CAMINO; // Backtracking: Marcamos como camino donde no hubo salida
 
     if (animado) {
         system(LIMPIAR_PANTALLA); // Limpiamos también al retroceder
         visualizarLaberinto(alto, ancho, laberinto);
-        PAUSA(15);
-    }
-    
+        PAUSA(15);       
+    }    
     return 0;
 }
 
@@ -237,10 +217,9 @@ void generarLaberinto(int alto, int ancho, char** laberinto) {
 void cavar(int y, int x, int alto, int ancho, char** laberinto) {
     // 1. Marcar la celda actual como un camino para no volver a visitarla.
     laberinto[y][x] = CAMINO;
-    // 2. Definir las 4 direcciones posibles (Arriba, Abajo, Izquierda, Derecha).
+    
     int direcciones[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}}; // {dy, dx}
-    // 3. Barajar las direcciones para asegurar un camino aleatorio (Algoritmo Fisher-Yates).
-    //    Esto es el núcleo de la aleatoriedad del laberinto.
+    // (Algoritmo Fisher-Yates).
     for (int i = 3; i > 0; i--) {
         int j = rand() % (i + 1);
         // Intercambiar direcciones[i] con direcciones[j]
@@ -271,7 +250,7 @@ void cavar(int y, int x, int alto, int ancho, char** laberinto) {
 }
 
 void visualizarLaberinto(int alto, int ancho, char** laberinto) {
- 
+
     if (ancho > 0 && alto > 0) {
         for (int i = 0; i < alto; i++) {
             for (int j = 0; j < ancho; j++) {
@@ -289,34 +268,3 @@ void liberarMemoria(int alto, char** laberinto) {
     }
     free(laberinto);
 }
-
-
-// void cavar(int y, int x, int alto, int ancho, char** laberinto) {
-    
-//     laberinto[y][x] = CAMINO;
-//     int direcciones[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
-//     for (int i = 0; i < 4; i++) {
-//         int r = rand() % 4;
-//         int tempY = direcciones[i][0];
-//         int tempX = direcciones[i][1];
-//         direcciones[i][0] = direcciones[r][0];
-//         direcciones[i][1] = direcciones[r][1];
-//         direcciones[r][0] = tempY;
-//         direcciones[r][1] = tempX;
-//     }
-//     for (int i = 0; i < 4; i++) {
-//         int dx = direcciones[i][1];
-//         int dy = direcciones[i][0];
-//         int nuevaX = x + dx * 2;
-//         int nuevaY = y + dy * 2;
-//         if (nuevaY > 0 && nuevaY < alto - 1 && nuevaX > 0 && nuevaX < ancho - 1 && laberinto[nuevaY][nuevaX] == MURO) {
-//             laberinto[y + dy][x + dx] = CAMINO;
-//             cavar(nuevaY, nuevaX, alto, ancho, laberinto);            
-//         }
-//     }
-// }
-
-
-
-
-

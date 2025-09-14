@@ -1,5 +1,3 @@
-// utils.h
-
 #ifndef UTILS_H
 #define UTILS_H
 
@@ -15,4 +13,4 @@ void limpiar_pantalla();
 void pausa(int ms);
 void system_pause();
 
-#endif // UTILS_H
+#endif

@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "laberinto.h" 
 
-// Definición de las constantes globales
 const char MURO = '#';
 const char CAMINO = '*';
 const char ENTRADA = 'E';

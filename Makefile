@@ -31,4 +31,5 @@ utils.o: utils.c
 
 # --- Regla para limpiar los archivos temporales ---
 clean:
-	$(RM) $(OBJETOS) $(EJECUTABLE)
+	$(RM) $(OBJETOS) 
+# $(EJECUTABLE)
