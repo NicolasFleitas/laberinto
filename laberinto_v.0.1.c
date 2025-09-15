@@ -415,8 +415,8 @@ void liberarCola(NodoBFS* cabeza) {
 }
 
 void liberarMemoria(int alto, char** laberinto) {
-    for (int i = 0; i < alto; i++) {
-        free(laberinto[i]);
-    }
-    free(laberinto);
+    // for (int i = 0; i < alto; i++) {
+    //     free(laberinto[i]);
+    // }
+    // free(laberinto);
 }
