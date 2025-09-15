@@ -186,6 +186,7 @@ int buscarSalida(int y, int x, int alto, int ancho, char** laberinto, int animad
         visualizarLaberinto(alto, ancho, laberinto);
         PAUSA(15);
     }
+    
 
     if (buscarSalida(y, x + 1, alto, ancho, laberinto, animado)) return 1;
     if (buscarSalida(y + 1, x, alto, ancho, laberinto, animado)) return 1;
