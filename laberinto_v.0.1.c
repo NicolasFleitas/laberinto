@@ -1,5 +1,5 @@
-// Definir esta macro antes de incluir las cabeceras asegura que nanosleep esté disponible.
-#define _POSIX_C_SOURCE 199309L
+
+#define _POSIX_C_SOURCE 199309L // nanosleep
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,9 +47,8 @@ void generarLaberinto(int alto, int ancho, char** laberinto);
 void cavar(int y, int x, int alto, int ancho, char** laberinto);
 void liberarMemoria(int alto, char** laberinto);
 int resolverLaberinto(int alto, int ancho, char** laberinto, int animado);
-int buscarSalida(int y, int x, int alto, int ancho, char** laberinto, int animado);
+int buscarSalida_DFS(int y, int x, int alto, int ancho, char** laberinto, int animado);
 int buscarSalida_BFS(int y, int x, int alto, int ancho, char** laberinto, int animado);
-
 
 // Prototipo de la función auxiliar para la cola
 NodoBFS* crearNodo(int y, int x, NodoBFS* anterior);
@@ -137,8 +136,9 @@ int main(int argc, char* argv[]) {
     #else
         clock_gettime(CLOCK_MONOTONIC, &inicio_sol);
     #endif
-
-    // int solucion_encontrada = resolverLaberinto(alto, ancho, laberinto, animado);
+    // METODO DFS
+    //int solucion_encontrada = resolverLaberinto(alto, ancho, laberinto, animado);
+    //METODO BFS
     int solucion_encontrada = buscarSalida_BFS(1, 1, alto, ancho, laberinto, animado);
 
     #ifdef _WIN32
@@ -246,7 +246,7 @@ int resolverLaberinto(int alto, int ancho, char** laberinto, int animado) {
         system(LIMPIAR_PANTALLA);
         visualizarLaberinto(alto, ancho, laberinto);
     }
-    PAUSA(1000);
+    //PAUSA(1000);
     return buscarSalida_DFS(1, 1, alto, ancho, laberinto, animado);
 }
 
@@ -270,8 +270,7 @@ int buscarSalida_DFS(int y, int x, int alto, int ancho, char** laberinto, int an
         system(LIMPIAR_PANTALLA); // Se limpia la pantalla antes de volver a mostrar el laberinto
         visualizarLaberinto(alto, ancho, laberinto);
         PAUSA(15);
-    }
-    
+    }    
 
     if (buscarSalida_DFS(y, x + 1, alto, ancho, laberinto, animado)) return 1;
     if (buscarSalida_DFS(y + 1, x, alto, ancho, laberinto, animado)) return 1;
