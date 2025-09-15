@@ -247,10 +247,10 @@ int resolverLaberinto(int alto, int ancho, char** laberinto, int animado) {
         visualizarLaberinto(alto, ancho, laberinto);
     }
     PAUSA(1000);
-    return buscarSalida(1, 1, alto, ancho, laberinto, animado);
+    return buscarSalida_DFS(1, 1, alto, ancho, laberinto, animado);
 }
 
-int buscarSalida(int y, int x, int alto, int ancho, char** laberinto, int animado) {
+int buscarSalida_DFS(int y, int x, int alto, int ancho, char** laberinto, int animado) {
   
     if (y < 0 || y >= alto || x < 0 || x >= ancho) {
         return 0;
@@ -273,10 +273,10 @@ int buscarSalida(int y, int x, int alto, int ancho, char** laberinto, int animad
     }
     
 
-    if (buscarSalida(y, x + 1, alto, ancho, laberinto, animado)) return 1;
-    if (buscarSalida(y + 1, x, alto, ancho, laberinto, animado)) return 1;
-    if (buscarSalida(y, x - 1, alto, ancho, laberinto, animado)) return 1;
-    if (buscarSalida(y - 1, x, alto, ancho, laberinto, animado)) return 1;
+    if (buscarSalida_DFS(y, x + 1, alto, ancho, laberinto, animado)) return 1;
+    if (buscarSalida_DFS(y + 1, x, alto, ancho, laberinto, animado)) return 1;
+    if (buscarSalida_DFS(y, x - 1, alto, ancho, laberinto, animado)) return 1;
+    if (buscarSalida_DFS(y - 1, x, alto, ancho, laberinto, animado)) return 1;
 
     laberinto[y][x] = CAMINO; // Backtracking: Marcamos como camino donde no hubo salida
 
@@ -414,7 +414,6 @@ void liberarCola(NodoBFS* cabeza) {
         free(temp);
     }
 }
-
 
 void liberarMemoria(int alto, char** laberinto) {
     for (int i = 0; i < alto; i++) {
