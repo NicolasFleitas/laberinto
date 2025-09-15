@@ -151,19 +151,86 @@ int main(int argc, char* argv[]) {
     } else {
         printf("Tiempo de resolución (algoritmo): %f segundos.\n", tiempo_resolucion);
     }
-    fflush(stdout);
+    
 
     liberarMemoria(alto, laberinto);
-    printf("Fin\n");
+    
     SYSTEM_PAUSE;
     return 0;
 }
+
+// GENERACIÓN DEL LABERINTO
+
+void inicializarLaberinto(int alto, int ancho, char** laberinto) {
+    for (int i = 0; i < alto; i++) {
+        for (int j = 0; j < ancho; j++) {
+            laberinto[i][j] = MURO;
+        }
+    }
+}
+
+void generarLaberinto(int alto, int ancho, char** laberinto) {
+    cavar(1, 1, alto, ancho, laberinto);
+}
+
+void cavar(int y, int x, int alto, int ancho, char** laberinto) {
+    
+    laberinto[y][x] = CAMINO;
+    
+    int direcciones[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}}; // {dy, dx}
+    // (Algoritmo Fisher-Yates).
+    for (int i = 3; i > 0; i--) {
+        int j = rand() % (i + 1);
+        // Intercambiar direcciones[i] con direcciones[j]
+        int temp[2];
+        temp[0] = direcciones[i][0];
+        temp[1] = direcciones[i][1];
+        direcciones[i][0] = direcciones[j][0];
+        direcciones[i][1] = direcciones[j][1];
+        direcciones[j][0] = temp[0];
+        direcciones[j][1] = temp[1];
+    }
+    
+    for (int i = 0; i < 4; i++) {
+        int dy = direcciones[i][0];
+        int dx = direcciones[i][1];
+        // Calculamos la coordenada de la celda a dos pasos de distancia.
+        int nuevaY = y + dy * 2;
+        int nuevaX = x + dx * 2;
+        // Comprobamos si la nueva celda es un lugar válido para cavar.
+        // Debe estar dentro de los límites y ser todavía un muro.
+        if (nuevaY > 0 && nuevaY < alto - 1 && nuevaX > 0 && nuevaX < ancho - 1 && laberinto[nuevaY][nuevaX] == MURO) {
+            // Cavamos el muro que está ENTRE la celda actual y la nueva.
+            laberinto[y + dy][x + dx] = CAMINO;
+            // Llamada recursiva: continuamos cavando desde la nueva celda.
+            cavar(nuevaY, nuevaX, alto, ancho, laberinto);
+        }
+    }
+}
+
+// VISUALIZACION
+
+void visualizarLaberinto(int alto, int ancho, char** laberinto) {
+
+    if (ancho > 0 && alto > 0) {
+        for (int i = 0; i < alto; i++) {
+            for (int j = 0; j < ancho; j++) {
+                printf("%c", laberinto[i][j]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
+}
+
+// RESOLUCIÓN
 
 int resolverLaberinto(int alto, int ancho, char** laberinto, int animado) {
     if (animado) {
         system(LIMPIAR_PANTALLA);
         visualizarLaberinto(alto, ancho, laberinto);
     }
+    PAUSA(1000);
     return buscarSalida(1, 1, alto, ancho, laberinto, animado);
 }
 
@@ -172,9 +239,11 @@ int buscarSalida(int y, int x, int alto, int ancho, char** laberinto, int animad
     if (y < 0 || y >= alto || x < 0 || x >= ancho) {
         return 0;
     }
+
     if (laberinto[y][x] == SALIDA) {
         return 1;
     }
+    
     if (laberinto[y][x] == MURO || laberinto[y][x] == RECORRIDO || laberinto[y][x] == ENTRADA) {
         return 0;
     }
@@ -203,65 +272,6 @@ int buscarSalida(int y, int x, int alto, int ancho, char** laberinto, int animad
     return 0;
 }
 
-void inicializarLaberinto(int alto, int ancho, char** laberinto) {
-    for (int i = 0; i < alto; i++) {
-        for (int j = 0; j < ancho; j++) {
-            laberinto[i][j] = MURO;
-        }
-    }
-}
-
-void generarLaberinto(int alto, int ancho, char** laberinto) {
-    cavar(1, 1, alto, ancho, laberinto);
-}
-
-void cavar(int y, int x, int alto, int ancho, char** laberinto) {
-    // 1. Marcar la celda actual como un camino para no volver a visitarla.
-    laberinto[y][x] = CAMINO;
-    
-    int direcciones[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}}; // {dy, dx}
-    // (Algoritmo Fisher-Yates).
-    for (int i = 3; i > 0; i--) {
-        int j = rand() % (i + 1);
-        // Intercambiar direcciones[i] con direcciones[j]
-        int temp[2];
-        temp[0] = direcciones[i][0];
-        temp[1] = direcciones[i][1];
-        direcciones[i][0] = direcciones[j][0];
-        direcciones[i][1] = direcciones[j][1];
-        direcciones[j][0] = temp[0];
-        direcciones[j][1] = temp[1];
-    }
-    // 4. Recorrer las direcciones ya barajadas y explorar.
-    for (int i = 0; i < 4; i++) {
-        int dy = direcciones[i][0];
-        int dx = direcciones[i][1];
-        // Calculamos la coordenada de la celda a dos pasos de distancia.
-        int nuevaY = y + dy * 2;
-        int nuevaX = x + dx * 2;
-        // Comprobamos si la nueva celda es un lugar válido para cavar.
-        // Debe estar dentro de los límites y ser todavía un muro.
-        if (nuevaY > 0 && nuevaY < alto - 1 && nuevaX > 0 && nuevaX < ancho - 1 && laberinto[nuevaY][nuevaX] == MURO) {
-            // Cavamos el muro que está ENTRE la celda actual y la nueva.
-            laberinto[y + dy][x + dx] = CAMINO;
-            // Llamada recursiva: continuamos cavando desde la nueva celda.
-            cavar(nuevaY, nuevaX, alto, ancho, laberinto);
-        }
-    }
-}
-
-void visualizarLaberinto(int alto, int ancho, char** laberinto) {
-
-    if (ancho > 0 && alto > 0) {
-        for (int i = 0; i < alto; i++) {
-            for (int j = 0; j < ancho; j++) {
-                printf("%c", laberinto[i][j]);
-            }
-            printf("\n");
-        }
-        printf("\n");
-    }
-}
 
 void liberarMemoria(int alto, char** laberinto) {
     for (int i = 0; i < alto; i++) {
