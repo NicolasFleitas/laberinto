@@ -137,9 +137,9 @@ int main(int argc, char* argv[]) {
         clock_gettime(CLOCK_MONOTONIC, &inicio_sol);
     #endif
     // METODO DFS
-    //int solucion_encontrada = resolverLaberinto(alto, ancho, laberinto, animado);
+    int solucion_encontrada = resolverLaberinto(alto, ancho, laberinto, animado);
     //METODO BFS
-    int solucion_encontrada = buscarSalida_BFS(1, 1, alto, ancho, laberinto, animado);
+    // int solucion_encontrada = buscarSalida_BFS(1, 1, alto, ancho, laberinto, animado);
 
     #ifdef _WIN32
         QueryPerformanceCounter(&fin_sol);
