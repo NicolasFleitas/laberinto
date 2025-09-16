@@ -90,14 +90,26 @@ void bfs(int matriz[N][M], int startY, int startX, int endY, int endX) {
 }
 
 int main() {
-    int laberinto[N][M] = {
-        {0, 0, 1, 0, 0},
-        {0, 0, 1, 0, 1},
-        {1, 0, 0, 0, 0},
-        {1, 1, 0, 1, 0},
-        {0, 0, 0, 1, 0}
+    int** laberinto[N][M] = {
+        {1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1}
     };
 
-    bfs(laberinto, 0, 0, 4, 4); // de inicio (0,0) a salida (4,4)
+    for(int i=0; i<M; i++) {
+        for(int j=0; j<N; j++) {
+            if(i==0 && j == 0) {
+                printf("E");
+            } else if (i==M-1 && j == N-1) {
+                printf("S");    
+            } else {
+                printf("%d", laberinto[i][j]);
+            }
+        }
+        printf("\n");
+    }   
+
     return 0;
 }
